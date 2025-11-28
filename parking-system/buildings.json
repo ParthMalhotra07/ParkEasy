@@ -1,0 +1,85 @@
+[ {
+  "name" : "City Center Mall",
+  "address" : "MG Road, Bangalore",
+  "floors" : [ {
+    "level" : "B1",
+    "slots" : [ {
+      "id" : "B1-01",
+      "row" : 1,
+      "col" : 1,
+      "type" : "SUV",
+      "occupied" : true
+    }, {
+      "id" : "B1-02",
+      "row" : 1,
+      "col" : 2,
+      "type" : "Compact",
+      "occupied" : false
+    } ]
+  } ]
+}, {
+  "name" : "City Center Mall",
+  "address" : "MG Road, Bangalore",
+  "floors" : [ {
+    "level" : "B1",
+    "slots" : [ {
+      "id" : "B1-01",
+      "row" : 1,
+      "col" : 1,
+      "type" : "SUV",
+      "occupied" : false
+    }, {
+      "id" : "B1-02",
+      "row" : 1,
+      "col" : 2,
+      "type" : "Compact",
+      "occupied" : false
+    } ]
+  } ]
+}, {
+  "name" : null,
+  "address" : null,
+  "floors" : [ ]
+}, {
+  "name" : null,
+  "address" : null,
+  "floors" : [ ]
+}, {
+  "name" : "City Center Mall",
+  "address" : "MG Road, Bangalore",
+  "floors" : [ {
+    "level" : "B1",
+    "slots" : [ {
+      "id" : "B1-01",
+      "row" : 1,
+      "col" : 1,
+      "type" : "SUV",
+      "occupied" : false
+    }, {
+      "id" : "B1-02",
+      "row" : 1,
+      "col" : 2,
+      "type" : "Compact",
+      "occupied" : false
+    } ]
+  } ]
+}, {
+  "name" : "City Center Mall",
+  "address" : "MG Road, Bangalore",
+  "floors" : [ {
+    "level" : "B1",
+    "slots" : [ {
+      "id" : "B1-01",
+      "row" : 1,
+      "col" : 1,
+      "type" : "SUV",
+      "occupied" : false
+    }, {
+      "id" : "B1-02",
+      "row" : 1,
+      "col" : 2,
+      "type" : "Compact",
+      "occupied" : false
+    } ]
+  } ]
+} ]

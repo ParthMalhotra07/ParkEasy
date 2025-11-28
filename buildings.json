@@ -1,0 +1,376 @@
+[ {
+  "name" : "mall of asia",
+  "address" : "blr",
+  "floors" : [ {
+    "level" : "B1",
+    "slots" : [ {
+      "id" : "B1-11",
+      "row" : 1,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-12",
+      "row" : 1,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-13",
+      "row" : 1,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-21",
+      "row" : 2,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-22",
+      "row" : 2,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-23",
+      "row" : 2,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-31",
+      "row" : 3,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-32",
+      "row" : 3,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-33",
+      "row" : 3,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    } ]
+  } ]
+}, {
+  "name" : "Mall4",
+  "address" : "blr",
+  "floors" : [ {
+    "level" : "B1",
+    "slots" : [ {
+      "id" : "B1-11",
+      "row" : 1,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-12",
+      "row" : 1,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-13",
+      "row" : 1,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-14",
+      "row" : 1,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-15",
+      "row" : 1,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-21",
+      "row" : 2,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-22",
+      "row" : 2,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-23",
+      "row" : 2,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-24",
+      "row" : 2,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-25",
+      "row" : 2,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-31",
+      "row" : 3,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-32",
+      "row" : 3,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-33",
+      "row" : 3,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-34",
+      "row" : 3,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-35",
+      "row" : 3,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-41",
+      "row" : 4,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-42",
+      "row" : 4,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-43",
+      "row" : 4,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-44",
+      "row" : 4,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-45",
+      "row" : 4,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-51",
+      "row" : 5,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-52",
+      "row" : 5,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-53",
+      "row" : 5,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-54",
+      "row" : 5,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B1-55",
+      "row" : 5,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    } ]
+  } ]
+}, {
+  "name" : "Mall4",
+  "address" : "blr",
+  "floors" : [ {
+    "level" : "B2",
+    "slots" : [ {
+      "id" : "B2-11",
+      "row" : 1,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-12",
+      "row" : 1,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-13",
+      "row" : 1,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-14",
+      "row" : 1,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-15",
+      "row" : 1,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-21",
+      "row" : 2,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-22",
+      "row" : 2,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-23",
+      "row" : 2,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-24",
+      "row" : 2,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-25",
+      "row" : 2,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-31",
+      "row" : 3,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-32",
+      "row" : 3,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-33",
+      "row" : 3,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-34",
+      "row" : 3,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-35",
+      "row" : 3,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-41",
+      "row" : 4,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-42",
+      "row" : 4,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-43",
+      "row" : 4,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-44",
+      "row" : 4,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-45",
+      "row" : 4,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-51",
+      "row" : 5,
+      "col" : 1,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-52",
+      "row" : 5,
+      "col" : 2,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-53",
+      "row" : 5,
+      "col" : 3,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-54",
+      "row" : 5,
+      "col" : 4,
+      "type" : "CAR",
+      "occupied" : false
+    }, {
+      "id" : "B2-55",
+      "row" : 5,
+      "col" : 5,
+      "type" : "CAR",
+      "occupied" : false
+    } ]
+  } ]
+} ]

@@ -1,0 +1,21 @@
+[ {
+  "reservationId" : "1976a0b6-d895-48f9-9bbd-585d48e76e01",
+  "vehicleNumber" : "MH-123",
+  "buildingName" : "mall of asia",
+  "floorLevel" : "B1",
+  "slotId" : "B1-11",
+  "startTime" : "2025-11-26T23:17:59.6212174",
+  "endTime" : "2025-11-26T23:19:10.328637989",
+  "status" : "PAID",
+  "billAmount" : 40.0
+}, {
+  "reservationId" : "53b9f7a4-1d43-46ce-919f-2869b48a3b07",
+  "vehicleNumber" : "KA-01-HH-1234",
+  "buildingName" : "mall of asia",
+  "floorLevel" : "B1",
+  "slotId" : "B1-12",
+  "startTime" : "2025-11-28T09:39:58.2533072",
+  "endTime" : "2025-11-28T09:40:16.8521056",
+  "status" : "PAID",
+  "billAmount" : 40.0
+} ]
