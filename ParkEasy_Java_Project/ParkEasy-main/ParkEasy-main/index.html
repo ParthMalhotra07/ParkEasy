@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Parking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen font-sans">
+
+<!-- NAVBAR -->
+<nav class="bg-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2 text-xl font-bold">
+            <i class="fa-solid fa-square-parking"></i> <span>ParkEasy</span>
+        </div>
+        <div class="space-x-4 text-sm font-semibold">
+            <button onclick="showSection('book')" class="hover:text-blue-200">ENTRY (Book)</button>
+            <button onclick="showSection('exit')" class="hover:text-blue-200">EXIT (Checkout)</button>
+            <button onclick="showSection('admin')" class="bg-blue-800 px-3 py-1 rounded">Admin</button>
+            <span id="adminStatus" class="hidden text-green-300 text-xs"></span>
+        </div>
+    </div>
+</nav>
+
+<main class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- SECTION 1: ADMIN -->
+    <section id="admin" class="hidden">
+        <div class="bg-white p-6 rounded shadow-lg">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">Admin Panel</h2>
+
+            <!-- Admin Auth Box (Login/Register) -->
+            <div id="adminAuthBox">
+                <div class="flex mb-4 border-b">
+                    <button onclick="showAuthTab('login')" id="loginTab" class="px-4 py-2 font-bold border-b-2 border-blue-600 text-blue-600">Login</button>
+                    <button onclick="showAuthTab('register')" id="registerTab" class="px-4 py-2 font-bold text-gray-500">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginForm">
+                    <input id="admUser" placeholder="Username" class="border p-2 rounded w-full mb-2">
+                    <input id="admPass" type="password" placeholder="Password" class="border p-2 rounded w-full mb-4">
+                    <button onclick="adminLogin()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Login</button>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerForm" class="hidden">
+                    <input id="regUser" placeholder="Username" class="border p-2 rounded w-full mb-2">
+                    <input id="regEmail" type="email" placeholder="Email (optional)" class="border p-2 rounded w-full mb-2">
+                    <input id="regPass" type="password" placeholder="Password (min 4 chars)" class="border p-2 rounded w-full mb-4">
+                    <button onclick="adminRegister()" class="bg-green-600 text-white px-4 py-2 rounded w-full">Register</button>
+                </div>
+            </div>
+
+            <!-- Admin Panel (Hidden until login) -->
+            <div id="adminPanelBox" class="hidden mt-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg">Welcome, <span id="adminUsername"></span>!</h3>
+                    <button onclick="adminLogout()" class="text-red-600 text-sm hover:underline">Logout</button>
+                </div>
+
+                <!-- Create Building Section -->
+                <div class="bg-gray-50 p-4 rounded mb-6">
+                    <h4 class="font-bold text-md mb-3"><i class="fa-solid fa-building"></i> Create New Building</h4>
+                    <div class="space-y-3">
+                        <input id="bName" placeholder="Building Name *" class="border p-2 w-full rounded">
+                        <input id="bAddr" placeholder="Address *" class="border p-2 w-full rounded">
+                        <div class="grid grid-cols-3 gap-2">
+                            <input id="fLevel" placeholder="Floor (e.g. B1) *" class="border p-2 rounded">
+                            <input id="fRows" type="number" min="1" placeholder="Rows *" class="border p-2 rounded">
+                            <input id="fCols" type="number" min="1" placeholder="Cols *" class="border p-2 rounded">
+                        </div>
+                        <button onclick="createBuilding()" class="bg-green-600 text-white px-4 py-2 rounded w-full">
+                            <i class="fa-solid fa-plus"></i> Create Building
+                        </button>
+                    </div>
+                </div>
+
+                <!-- My Buildings Section -->
+                <div class="bg-gray-50 p-4 rounded">
+                    <h4 class="font-bold text-md mb-3"><i class="fa-solid fa-list"></i> My Buildings</h4>
+                    <div id="myBuildingsList" class="space-y-2">
+                        <p class="text-gray-500 text-sm">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: ENTRY / BOOKING -->
+    <section id="book">
+        <div class="bg-white p-6 rounded shadow-lg">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2"><i class="fa-solid fa-car-side"></i> Vehicle Entry</h2>
+
+            <!-- Search Bar with Suggestions -->
+            <div class="mb-4 relative">
+                <div class="relative">
+                    <input id="buildingSearch" type="text" placeholder="Start typing building name or address..."
+                           class="border p-3 pl-10 rounded w-full text-lg" onkeyup="showSuggestions()" onfocus="showSuggestions()">
+                    <i class="fa-solid fa-search absolute left-3 top-4 text-gray-400"></i>
+                </div>
+                
+                <!-- Suggestions Dropdown -->
+                <div id="suggestions" class="hidden absolute z-10 w-full bg-white border rounded-b shadow-lg max-h-64 overflow-y-auto">
+                </div>
+            </div>
+
+            <!-- Selected Building Info Card -->
+            <div id="selectedBuildingCard" class="hidden mb-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 id="cardBuildingName" class="font-bold text-lg text-blue-800"></h3>
+                        <p id="cardBuildingAddress" class="text-gray-600 text-sm"><i class="fa-solid fa-location-dot"></i> <span></span></p>
+                    </div>
+                    <button onclick="clearSelection()" class="text-gray-400 hover:text-red-500">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="cardStats" class="mt-3 flex gap-4">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="selFloor" class="block text-sm font-bold mb-1">Floor</label>
+                    <select id="selFloor" onchange="renderGrid()" class="border p-2 rounded w-full"></select>
+                </div>
+                <div id="floorStats" class="flex items-end pb-2">
+                </div>
+            </div>
+
+            <div id="grid" class="grid grid-cols-6 gap-3 mb-6"></div>
+
+            <div class="text-sm text-gray-500 italic text-center">
+                Select a Building & Floor, then Click a Green Slot.
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: EXIT / CHECKOUT -->
+    <section id="exit" class="hidden">
+        <div class="bg-white p-6 rounded shadow-lg max-w-md mx-auto">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2 text-center"><i class="fa-solid fa-receipt"></i> Checkout</h2>
+
+            <div id="checkoutForm">
+                <label class="block text-sm font-bold mb-1">Enter Vehicle Number</label>
+                <input id="outPlate" placeholder="Example: KA-01-AB-1234" class="border p-3 rounded w-full text-xl uppercase text-center mb-4">
+                <button onclick="getBill()" class="bg-red-600 text-white px-4 py-3 rounded w-full font-bold">Calculate Bill</button>
+            </div>
+
+            <div id="billResult" class="hidden mt-6 text-center bg-gray-50 p-4 rounded border">
+                <p class="text-gray-600">Total Amount Due</p>
+                <p class="text-4xl font-bold text-red-600 my-2">₹<span id="billAmt">0</span></p>
+                <p class="text-xs text-gray-500 mb-2">Time Recorded</p>
+
+                <img id="qrImg" class="w-32 h-32 mx-auto border shadow-sm" alt="QR code for payment">
+                <p class="text-xs text-gray-400 mt-1">Scan to Pay</p>
+
+                <button onclick="pay()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded w-full">Simulate Payment</button>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- MODAL -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+    <div class="bg-white p-6 rounded w-80 shadow-2xl">
+        <h3 class="font-bold text-lg mb-2">Confirm Booking</h3>
+        <p class="text-sm text-gray-600 mb-1">Slot: <span id="mSlot" class="font-bold"></span></p>
+        <input id="mPlate" placeholder="ENTER PLATE NUMBER" class="border-2 border-blue-200 p-2 w-full rounded mb-4 uppercase text-center font-bold">
+        <div class="flex justify-end gap-2">
+            <button onclick="document.getElementById('modal').classList.add('hidden')" class="px-3 py-1 text-gray-500">Cancel</button>
+            <button onclick="confirmBook()" class="px-3 py-1 bg-blue-600 text-white rounded">Book Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+    <div class="bg-white p-6 rounded w-80 shadow-2xl">
+        <h3 class="font-bold text-lg mb-2 text-red-600"><i class="fa-solid fa-triangle-exclamation"></i> Confirm Delete</h3>
+        <p class="text-sm text-gray-600 mb-4">Are you sure you want to delete building "<span id="deleteBuildingName" class="font-bold"></span>"?</p>
+        <div class="flex justify-end gap-2">
+            <button onclick="closeDeleteModal()" class="px-3 py-1 text-gray-500">Cancel</button>
+            <button onclick="confirmDelete()" class="px-3 py-1 bg-red-600 text-white rounded">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:8080/api";
+    let buildings = [], selB = "", selF = "", selS = "", currentResId = "";
+    let currentAdmin = null; // Store logged-in admin info
+    let buildingToDelete = ""; // Building name to delete
+
+    // Navigation
+    function showSection(id) {
+        ['admin','book','exit'].forEach(x => document.getElementById(x).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        if(id === 'book') loadBuildings();
+        if(id === 'admin' && currentAdmin) loadMyBuildings();
+    }
+
+    // Auth Tab Switching
+    function showAuthTab(tab) {
+        document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+        document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+        document.getElementById('loginTab').classList.toggle('border-blue-600', tab === 'login');
+        document.getElementById('loginTab').classList.toggle('text-blue-600', tab === 'login');
+        document.getElementById('loginTab').classList.toggle('text-gray-500', tab !== 'login');
+        document.getElementById('registerTab').classList.toggle('border-blue-600', tab === 'register');
+        document.getElementById('registerTab').classList.toggle('text-blue-600', tab === 'register');
+        document.getElementById('registerTab').classList.toggle('text-gray-500', tab !== 'register');
+    }
+
+    // --- ADMIN AUTHENTICATION ---
+    async function adminLogin() {
+        try {
+            const u = document.getElementById('admUser').value.trim();
+            const p = document.getElementById('admPass').value;
+
+            if (!u || !p) {
+                alert("Please enter username and password");
+                return;
+            }
+
+            const res = await fetch(API + '/admin/login', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({username:u, password:p})
+            });
+
+            if(!res.ok) {
+                const err = await res.text();
+                throw new Error(err || "Invalid credentials");
+            }
+
+            const data = await res.json();
+            currentAdmin = { adminId: data.adminId, username: data.username };
+
+            document.getElementById('adminAuthBox').classList.add('hidden');
+            document.getElementById('adminPanelBox').classList.remove('hidden');
+            document.getElementById('adminUsername').innerText = currentAdmin.username;
+            document.getElementById('adminStatus').innerText = `Logged in as ${currentAdmin.username}`;
+            document.getElementById('adminStatus').classList.remove('hidden');
+
+            loadMyBuildings();
+        } catch(e) {
+            alert(e.message || "Invalid Credentials");
+        }
+    }
+
+    async function adminRegister() {
+        try {
+            const u = document.getElementById('regUser').value.trim();
+            const e = document.getElementById('regEmail').value.trim();
+            const p = document.getElementById('regPass').value;
+
+            if (!u) {
+                alert("Username is required");
+                return;
+            }
+            if (!p || p.length < 4) {
+                alert("Password must be at least 4 characters");
+                return;
+            }
+
+            const res = await fetch(API + '/admin/register', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({username:u, password:p, email:e})
+            });
+
+            if(!res.ok) {
+                const err = await res.text();
+                throw new Error(err || "Registration failed");
+            }
+
+            const data = await res.json();
+            alert("Registration successful! Please login.");
+
+            // Switch to login tab
+            showAuthTab('login');
+            document.getElementById('admUser').value = u;
+            document.getElementById('regUser').value = "";
+            document.getElementById('regEmail').value = "";
+            document.getElementById('regPass').value = "";
+        } catch(e) {
+            alert(e.message || "Registration failed");
+        }
+    }
+
+    function adminLogout() {
+        currentAdmin = null;
+        document.getElementById('adminAuthBox').classList.remove('hidden');
+        document.getElementById('adminPanelBox').classList.add('hidden');
+        document.getElementById('adminStatus').classList.add('hidden');
+        document.getElementById('admUser').value = "";
+        document.getElementById('admPass').value = "";
+    }
+
+    // --- ADMIN BUILDING MANAGEMENT ---
+    async function createBuilding() {
+        if (!currentAdmin) {
+            alert("Please login first");
+            return;
+        }
+
+        const name = document.getElementById('bName').value.trim();
+        const addr = document.getElementById('bAddr').value.trim();
+        const lev = document.getElementById('fLevel').value.trim();
+        const r = parseInt(document.getElementById('fRows').value);
+        const c = parseInt(document.getElementById('fCols').value);
+
+        // Frontend validation
+        if (!name) {
+            alert("Building name is required");
+            return;
+        }
+        if (!addr) {
+            alert("Building address is required");
+            return;
+        }
+        if (!lev) {
+            alert("Floor level is required (e.g., B1, G, 1)");
+            return;
+        }
+        if (!r || r < 1) {
+            alert("Number of rows must be at least 1");
+            return;
+        }
+        if (!c || c < 1) {
+            alert("Number of columns must be at least 1");
+            return;
+        }
+
+        // Generate slots
+        const slots = [];
+        for(let i=1; i<=r; i++) {
+            for(let j=1; j<=c; j++) {
+                slots.push({id:`${lev}-${i}${j}`, row:i, col:j, type:"CAR", occupied:false});
+            }
+        }
+
+        try {
+            const res = await fetch(API+'/admin/create-building', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    adminId: currentAdmin.adminId,
+                    name: name,
+                    address: addr,
+                    floors: [{level:lev, slots:slots}]
+                })
+            });
+
+            if(!res.ok) {
+                const err = await res.text();
+                throw new Error(err || "Failed to create building");
+            }
+
+            alert("Building Created Successfully!");
+
+            // Clear form
+            document.getElementById('bName').value = "";
+            document.getElementById('bAddr').value = "";
+            document.getElementById('fLevel').value = "";
+            document.getElementById('fRows').value = "";
+            document.getElementById('fCols').value = "";
+
+            loadMyBuildings();
+        } catch(e) {
+            alert("Error: " + (e.message || "Failed to create building"));
+        }
+    }
+
+    async function loadMyBuildings() {
+        if (!currentAdmin) return;
+
+        try {
+            const res = await fetch(API+'/admin/my-buildings?adminId=' + currentAdmin.adminId);
+            const myBuildings = await res.json();
+
+            const container = document.getElementById('myBuildingsList');
+
+            if (myBuildings.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm italic">No buildings yet. Create your first building above!</p>';
+                return;
+            }
+
+            container.innerHTML = myBuildings.map(b => {
+                const safeName = b.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                return `
+                <div class="flex justify-between items-center bg-white p-3 rounded border">
+                    <div>
+                        <span class="font-bold">${b.name}</span>
+                        <span class="text-gray-500 text-sm ml-2">${b.address}</span>
+                        <span class="text-blue-600 text-xs ml-2">(${b.floors.length} floor(s), ${b.floors.reduce((acc, f) => acc + f.slots.length, 0)} slots)</span>
+                    </div>
+                    <button onclick="openDeleteModal('${safeName}')" class="text-red-600 hover:text-red-800 text-sm">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </div>
+            `}).join('');
+        } catch(e) {
+            document.getElementById('myBuildingsList').innerHTML = '<p class="text-red-500 text-sm">Error loading buildings</p>';
+        }
+    }
+
+    function openDeleteModal(buildingName) {
+        // Unescape the name
+        buildingToDelete = buildingName.replace(/\\'/g, "'").replace(/&quot;/g, '"');
+        document.getElementById('deleteBuildingName').innerText = buildingToDelete;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        buildingToDelete = "";
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    async function confirmDelete() {
+        if (!currentAdmin || !buildingToDelete) return;
+
+        try {
+            const res = await fetch(API+'/admin/delete-building', {
+                method:'DELETE', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    adminId: currentAdmin.adminId,
+                    buildingName: buildingToDelete
+                })
+            });
+
+            if(!res.ok) {
+                const err = await res.text();
+                throw new Error(err || "Failed to delete building");
+            }
+
+            alert("Building deleted successfully!");
+            closeDeleteModal();
+            loadMyBuildings();
+        } catch(e) {
+            alert("Error: " + (e.message || "Failed to delete building"));
+        }
+    }
+
+    // --- BOOKING ---
+    let allBuildings = []; // Store all buildings for filtering
+
+    async function loadBuildings() {
+        const res = await fetch(API+'/user/buildings');
+        allBuildings = await res.json();
+
+        // Filter out buildings with no valid floors/slots
+        allBuildings = allBuildings.filter(b =>
+            b.name && b.name.trim() !== '' &&
+            b.floors && b.floors.length > 0 &&
+            b.floors.some(f => f.slots && f.slots.length > 0)
+        );
+
+        buildings = [...allBuildings];
+        updateBuildingDropdown();
+    }
+
+    function updateBuildingDropdown() {
+        // No longer needed - using suggestions instead
+    }
+
+    function showSuggestions() {
+        const query = document.getElementById('buildingSearch').value.trim().toLowerCase();
+        const container = document.getElementById('suggestions');
+        
+        if (!query || query.length < 1) {
+            container.classList.add('hidden');
+            return;
+        }
+        
+        const matches = allBuildings.filter(b =>
+            (b.name && b.name.toLowerCase().includes(query)) ||
+            (b.address && b.address.toLowerCase().includes(query))
+        );
+        
+        if (matches.length === 0) {
+            container.innerHTML = '<div class="p-3 text-gray-500 text-center">No buildings found</div>';
+            container.classList.remove('hidden');
+            return;
+        }
+        
+        container.innerHTML = matches.map(b => {
+            const totalSlots = b.floors.reduce((acc, f) => acc + f.slots.length, 0);
+            const freeSlots = b.floors.reduce((acc, f) => acc + f.slots.filter(s => !s.occupied).length, 0);
+            const occupiedSlots = totalSlots - freeSlots;
+            const freePercent = totalSlots > 0 ? Math.round((freeSlots / totalSlots) * 100) : 0;
+            
+            return `
+                <div onclick="selectBuilding('${b.name.replace(/'/g, "\\'")}')" 
+                     class="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-bold text-blue-700">${b.name}</div>
+                            <div class="text-sm text-gray-500"><i class="fa-solid fa-location-dot"></i> ${b.address || 'No address'}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-gray-400">${b.floors.length} floor(s)</div>
+                        </div>
+                    </div>
+                    <div class="mt-2 flex items-center gap-3">
+                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: ${freePercent}%"></div>
+                        </div>
+                        <div class="text-xs">
+                            <span class="text-green-600 font-bold">${freeSlots}</span>
+                            <span class="text-gray-400">free</span>
+                            <span class="text-red-500 font-bold ml-1">${occupiedSlots}</span>
+                            <span class="text-gray-400">occupied</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.classList.remove('hidden');
+    }
+    
+    function selectBuilding(name) {
+        const b = allBuildings.find(x => x.name === name);
+        if (!b) return;
+        
+        selB = name;
+        
+        // Hide suggestions
+        document.getElementById('suggestions').classList.add('hidden');
+        document.getElementById('buildingSearch').value = name;
+        
+        // Show selected building card
+        const card = document.getElementById('selectedBuildingCard');
+        document.getElementById('cardBuildingName').innerText = b.name;
+        document.getElementById('cardBuildingAddress').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${b.address || 'No address'}`;
+        
+        // Calculate stats
+        const totalSlots = b.floors.reduce((acc, f) => acc + f.slots.length, 0);
+        const freeSlots = b.floors.reduce((acc, f) => acc + f.slots.filter(s => !s.occupied).length, 0);
+        const occupiedSlots = totalSlots - freeSlots;
+        
+        document.getElementById('cardStats').innerHTML = `
+            <div class="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-center">
+                <div class="text-2xl font-bold">${freeSlots}</div>
+                <div class="text-xs">Available</div>
+            </div>
+            <div class="bg-red-100 text-red-800 px-3 py-2 rounded-lg text-center">
+                <div class="text-2xl font-bold">${occupiedSlots}</div>
+                <div class="text-xs">Occupied</div>
+            </div>
+            <div class="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-center">
+                <div class="text-2xl font-bold">${totalSlots}</div>
+                <div class="text-xs">Total</div>
+            </div>
+            <div class="bg-purple-100 text-purple-800 px-3 py-2 rounded-lg text-center">
+                <div class="text-2xl font-bold">${b.floors.length}</div>
+                <div class="text-xs">Floors</div>
+            </div>
+        `;
+        
+        card.classList.remove('hidden');
+        
+        // Load floors
+        const floorSelect = document.getElementById('selFloor');
+        floorSelect.innerHTML = '<option value="">-- Select Floor --</option>' + 
+            b.floors.map(f => {
+                const floorFree = f.slots.filter(s => !s.occupied).length;
+                const floorTotal = f.slots.length;
+                return `<option value="${f.level}">${f.level} (${floorFree}/${floorTotal} free)</option>`;
+            }).join('');
+        floorSelect.disabled = false;
+        
+        document.getElementById('grid').innerHTML = '';
+        document.getElementById('floorStats').innerHTML = '';
+    }
+    
+    function clearSelection() {
+        selB = "";
+        selF = "";
+        document.getElementById('buildingSearch').value = '';
+        document.getElementById('selectedBuildingCard').classList.add('hidden');
+        document.getElementById('selFloor').innerHTML = '<option value="">-- Select Floor --</option>';
+        document.getElementById('selFloor').disabled = true;
+        document.getElementById('grid').innerHTML = '';
+        document.getElementById('floorStats').innerHTML = '';
+        document.getElementById('buildingSearch').focus();
+    }
+
+    function loadFloors() {
+        // Now handled by selectBuilding
+    }
+    
+    function renderGrid() {
+        selF = document.getElementById('selFloor').value;
+        const building = allBuildings.find(x=>x.name===selB);
+        if (!building) return;
+        const floor = building.floors.find(y=>y.level===selF);
+        if (!floor) {
+            document.getElementById('grid').innerHTML = '';
+            document.getElementById('floorStats').innerHTML = '';
+            return;
+        }
+        
+        // Show floor stats
+        const floorFree = floor.slots.filter(s => !s.occupied).length;
+        const floorOccupied = floor.slots.length - floorFree;
+        document.getElementById('floorStats').innerHTML = `
+            <span class="text-green-600 font-bold">${floorFree} free</span>
+            <span class="text-gray-400 mx-1">|</span>
+            <span class="text-red-500 font-bold">${floorOccupied} occupied</span>
+        `;
+        
+        document.getElementById('grid').innerHTML = floor.slots.map(s => `
+            <div onclick="${!s.occupied ? `openModal('${s.id}')` : ''}"
+                 class="h-16 border rounded flex items-center justify-center cursor-pointer font-bold text-xs
+                 ${s.occupied ? 'bg-red-200 text-red-800 cursor-not-allowed' : 'bg-green-200 text-green-800 hover:bg-green-300'}">
+                ${s.id} <br> ${s.occupied ? 'OCCUPIED' : 'FREE'}
+            </div>
+        `).join('');
+    }
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        const search = document.getElementById('buildingSearch');
+        const suggestions = document.getElementById('suggestions');
+        if (!search.contains(e.target) && !suggestions.contains(e.target)) {
+            suggestions.classList.add('hidden');
+        }
+    });
+    function openModal(sid) { selS = sid; document.getElementById('mSlot').innerText=sid; document.getElementById('modal').classList.remove('hidden'); }
+    async function confirmBook() {
+        const plate = document.getElementById('mPlate').value.trim();
+        if(!plate) return alert("Enter Plate Number");
+
+        try {
+            const res = await fetch(API+'/user/book', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({vehicleNumber:plate, buildingName:selB, floorLevel:selF, slotId:selS})
+            });
+
+            if(!res.ok) {
+                const err = await res.text();
+                throw new Error(err || "Booking failed");
+            }
+
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('mPlate').value = "";
+            alert("Booking Confirmed! Time Started.");
+            loadBuildings();
+        } catch(e) {
+            alert("Error: " + (e.message || "Booking failed"));
+        }
+    }
+
+    // --- EXIT ---
+    async function getBill() {
+        try {
+            const p = document.getElementById('outPlate').value.trim();
+            if (!p) {
+                alert("Please enter vehicle number");
+                return;
+            }
+
+            const res = await fetch(API+'/user/checkout', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({vehicleNumber:p})
+            });
+            if(!res.ok) {
+                const err = await res.text();
+                throw new Error(err || "No active booking found");
+            }
+            const data = await res.json();
+
+            document.getElementById('billAmt').innerText = data.reservation.billAmount;
+            document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${data.upiLink}`;
+            currentResId = data.reservation.reservationId;
+
+            document.getElementById('checkoutForm').classList.add('hidden');
+            document.getElementById('billResult').classList.remove('hidden');
+        } catch(e) { alert(e.message); }
+    }
+    async function pay() {
+        await fetch(API+'/user/pay', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({reservationId:currentResId})
+        });
+        alert("Payment Completed! Gate Opening...");
+        location.reload();
+    }
+
+    loadBuildings();
+</script>
+</body>
+</html>
