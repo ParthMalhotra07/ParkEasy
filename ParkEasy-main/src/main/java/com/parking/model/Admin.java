@@ -1,8 +1,12 @@
 package com.parking.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.util.UUID;
 
+@Entity
 public class Admin {
+    @Id
     private String adminId;
     private String username;
     private String password;

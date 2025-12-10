@@ -28,7 +28,7 @@ ParkEasy is a web-based application designed to simplify and automate the proces
 | **Aditya Bhat** | BT2024035 | Backend logic implementation, authentication system, database structuring and Readme|
 | **Hardh Kava** | BT2024041 | Frontend UI/UX development, responsive layout, dashboard interfaces |
 | **Dhyan Patel** | BT2024075 | Booking module development, API integration, slot allocation logic |
-| **Parth Malhotra** | BT2024197 | Admin-side management tools, CRUD operations for slots/users |
+| **Parth Malhotra** | BT2024197 | Admin-side management tools, create,delete and update operations for slots/users |
 | **Raj Gandhi** | BT2024172 | Testing, debugging, performance optimization, error handling |
 | **Subhadeep Das** | BT2024219 | Documentation, deployment setup, configuration management |
 

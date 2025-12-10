@@ -3,90 +3,66 @@ package com.parking.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.parking.model.Building;
+import com.parking.model.FloorSlot;
 import com.parking.model.Reservation;
+import com.parking.repository.FloorSlotRepository;
+import com.parking.repository.ReservationRepository;
 import com.parking.service.PaymentInterface;
 import com.parking.service.UserService;
-import com.parking.util.JsonStore;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired private JsonStore jsonStore;
+    @Autowired private ReservationRepository reservationRepository;
+    @Autowired private FloorSlotRepository floorSlotRepository;
     @Autowired private PaymentInterface paymentLogic;
 
-    private static final String BUILDINGS_FILE = "buildings.json";
-    private static final String RESERVATIONS_FILE = "reservations.json";
-    
-    // Lock to prevent race conditions during booking
-    private final ReentrantLock bookingLock = new ReentrantLock();
-
     @Override
+    @Transactional
     public Reservation bookSlot(String vehicleNumber, String buildingName, String floorLevel, String slotId) {
-        // Acquire lock to prevent concurrent booking of same slot
-        bookingLock.lock();
-        try {
-            // CLEANUP INPUT: Remove spaces and make uppercase
-            String cleanVehicle = vehicleNumber.trim().toUpperCase();
+        // CLEANUP INPUT: Remove spaces and make uppercase
+        String cleanVehicle = vehicleNumber.trim().toUpperCase();
 
-            // Check if vehicle already has an active reservation
-            List<Reservation> reservations = jsonStore.read(RESERVATIONS_FILE, Reservation.class);
-
-            for (Reservation r : reservations) {
-                if (r.getVehicleNumber().equalsIgnoreCase(cleanVehicle) && "ACTIVE".equals(r.getStatus())) {
-                    throw new RuntimeException("Vehicle " + cleanVehicle + " already has an active booking!");
-                }
-            }
-
-            // 1. Lock Slot in Building File
-            List<Building> buildings = jsonStore.read(BUILDINGS_FILE, Building.class);
-            boolean slotFound = false;
-
-            for (Building b : buildings) {
-                if (b.getName().equalsIgnoreCase(buildingName)) {
-                    for (Building.Floor floor : b.getFloors()) {
-                        if (floor.getLevel().equalsIgnoreCase(floorLevel)) {
-                            for (Building.FloorSlot slot : floor.getSlots()) {
-                                if (slot.getId().equals(slotId)) {
-                                    if (slot.isOccupied()) {
-                                        throw new RuntimeException("Slot already occupied! Please select another slot.");
-                                    }
-                                    slot.setOccupied(true);
-                                    slotFound = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (!slotFound) throw new RuntimeException("Slot not found");
-            jsonStore.write(BUILDINGS_FILE, buildings);
-
-            // 2. Create Reservation
-            Reservation res = new Reservation();
-            res.setReservationId(UUID.randomUUID().toString());
-            res.setVehicleNumber(cleanVehicle);
-            res.setBuildingName(buildingName);
-            res.setFloorLevel(floorLevel);
-            res.setSlotId(slotId);
-
-            // Record the exact start time of the server
-            res.setStartTime(LocalDateTime.now());
-
-            res.setStatus("ACTIVE");
-
-            reservations.add(res);
-            jsonStore.write(RESERVATIONS_FILE, reservations);
-
-            return res;
-        } finally {
-            bookingLock.unlock();
+        // Check if vehicle already has an active reservation
+        List<Reservation> activeReservations = reservationRepository.findByVehicleNumberIgnoreCaseAndStatus(cleanVehicle, "ACTIVE");
+        if (!activeReservations.isEmpty()) {
+            throw new RuntimeException("Vehicle " + cleanVehicle + " already has an active booking!");
         }
+
+        // 1. Lock Slot in Database (Pessimistic Write Lock)
+        Optional<FloorSlot> slotOpt = floorSlotRepository.findSlotForBooking(buildingName, floorLevel, slotId);
+        
+        if (slotOpt.isEmpty()) {
+            throw new RuntimeException("Slot not found");
+        }
+        
+        FloorSlot slot = slotOpt.get();
+        if (slot.isOccupied()) {
+            throw new RuntimeException("Slot already occupied! Please select another slot.");
+        }
+        
+        slot.setOccupied(true);
+        floorSlotRepository.save(slot);
+
+        // 2. Create Reservation
+        Reservation res = new Reservation();
+        res.setReservationId(UUID.randomUUID().toString());
+        res.setVehicleNumber(cleanVehicle);
+        res.setBuildingName(buildingName);
+        res.setFloorLevel(floorLevel);
+        res.setSlotId(slotId);
+
+        // Record the exact start time of the server
+        res.setStartTime(LocalDateTime.now());
+        res.setStatus("ACTIVE");
+
+        return reservationRepository.save(res);
     }
 
     @Override
@@ -94,58 +70,46 @@ public class UserServiceImpl implements UserService {
         // CLEANUP INPUT
         String cleanVehicle = vehicleNumber.trim().toUpperCase();
 
-        List<Reservation> reservations = jsonStore.read(RESERVATIONS_FILE, Reservation.class);
-        Reservation targetRes = null;
-
-        // Find ACTIVE reservation for this Vehicle
-        for (Reservation r : reservations) {
-            if (r.getVehicleNumber().equalsIgnoreCase(cleanVehicle) && "ACTIVE".equals(r.getStatus())) {
-                targetRes = r;
-                break;
-            }
+        List<Reservation> activeReservations = reservationRepository.findByVehicleNumberIgnoreCaseAndStatus(cleanVehicle, "ACTIVE");
+        
+        if (activeReservations.isEmpty()) {
+            throw new RuntimeException("No active booking found for vehicle: " + cleanVehicle);
         }
-        if (targetRes == null) throw new RuntimeException("No active booking found for vehicle: " + cleanVehicle);
+        
+        Reservation targetRes = activeReservations.get(0);
 
         // Calculate Bill
         LocalDateTime endTime = LocalDateTime.now();
         targetRes.setEndTime(endTime);
         targetRes.setBillAmount(paymentLogic.calculateFee(targetRes.getStartTime(), endTime));
 
-        jsonStore.write(RESERVATIONS_FILE, reservations);
-        return targetRes;
+        return reservationRepository.save(targetRes);
     }
 
     @Override
+    @Transactional
     public Reservation confirmPayment(String reservationId) {
-        List<Reservation> reservations = jsonStore.read(RESERVATIONS_FILE, Reservation.class);
-        Reservation targetRes = null;
-
-        for (Reservation r : reservations) {
-            if (r.getReservationId().equals(reservationId)) {
-                targetRes = r;
-                break;
-            }
+        Optional<Reservation> resOpt = reservationRepository.findById(reservationId);
+        
+        if (resOpt.isEmpty()) {
+            throw new RuntimeException("Reservation not found");
         }
-        if (targetRes == null) throw new RuntimeException("Reservation not found");
-
+        
+        Reservation targetRes = resOpt.get();
         targetRes.setStatus("PAID");
-        unlockSlot(targetRes.getBuildingName(), targetRes.getSlotId());
+        
+        unlockSlot(targetRes.getBuildingName(), targetRes.getFloorLevel(), targetRes.getSlotId());
 
-        jsonStore.write(RESERVATIONS_FILE, reservations);
-        return targetRes;
+        return reservationRepository.save(targetRes);
     }
 
-    private void unlockSlot(String buildingName, String slotId) {
-        List<Building> buildings = jsonStore.read(BUILDINGS_FILE, Building.class);
-        for (Building b : buildings) {
-            if (b.getName().equalsIgnoreCase(buildingName)) {
-                for (Building.Floor floor : b.getFloors()) {
-                    for (Building.FloorSlot slot : floor.getSlots()) {
-                        if (slot.getId().equals(slotId)) slot.setOccupied(false);
-                    }
-                }
-            }
+    private void unlockSlot(String buildingName, String floorLevel, String slotId) {
+        // Find slot without pessimistic lock for unlocking
+        Optional<FloorSlot> slotOpt = floorSlotRepository.findSlotForBooking(buildingName, floorLevel, slotId);
+        if (slotOpt.isPresent()) {
+            FloorSlot slot = slotOpt.get();
+            slot.setOccupied(false);
+            floorSlotRepository.save(slot);
         }
-        jsonStore.write(BUILDINGS_FILE, buildings);
     }
 }

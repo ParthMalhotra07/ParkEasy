@@ -1,8 +1,12 @@
 package com.parking.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 
+@Entity
 public class Reservation {
+    @Id
     private String reservationId;
     private String vehicleNumber; // <--- The Main Identity
     private String buildingName;

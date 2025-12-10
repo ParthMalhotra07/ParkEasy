@@ -1,29 +1,31 @@
 package com.parking.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.parking.model.Admin;
 import com.parking.model.Building;
+import com.parking.model.Floor;
+import com.parking.model.FloorSlot;
 import com.parking.model.Reservation;
+import com.parking.repository.AdminRepository;
+import com.parking.repository.BuildingRepository;
+import com.parking.repository.ReservationRepository;
 import com.parking.service.AdminService;
-import com.parking.util.JsonStore;
 
 @Service
 public class AdminServiceImpl implements AdminService {
-    @Autowired private JsonStore jsonStore;
     
-    private static final String BUILDINGS_FILE = "buildings.json";
-    private static final String ADMINS_FILE = "admins.json";
-    private static final String RESERVATIONS_FILE = "reservations.json";
+    @Autowired private AdminRepository adminRepository;
+    @Autowired private BuildingRepository buildingRepository;
+    @Autowired private ReservationRepository reservationRepository;
 
     @Override
     public Admin registerAdmin(String username, String password, String email) {
-        // Validate input
         if (username == null || username.trim().isEmpty()) {
             throw new RuntimeException("Username cannot be empty");
         }
@@ -31,26 +33,18 @@ public class AdminServiceImpl implements AdminService {
             throw new RuntimeException("Password must be at least 4 characters");
         }
         
-        List<Admin> admins = jsonStore.read(ADMINS_FILE, Admin.class);
-        
-        // Check if username already exists
-        for (Admin admin : admins) {
-            if (admin.getUsername().equalsIgnoreCase(username.trim())) {
-                throw new RuntimeException("Username already exists");
-            }
+        Optional<Admin> existing = adminRepository.findByUsernameIgnoreCase(username.trim());
+        if (existing.isPresent()) {
+            throw new RuntimeException("Username already exists");
         }
         
-        // Create new admin
         Admin newAdmin = new Admin();
         newAdmin.setAdminId(UUID.randomUUID().toString());
         newAdmin.setUsername(username.trim());
         newAdmin.setPassword(password); // In production: hash this!
         newAdmin.setEmail(email != null ? email.trim() : "");
         
-        admins.add(newAdmin);
-        jsonStore.write(ADMINS_FILE, admins);
-        
-        return newAdmin;
+        return adminRepository.save(newAdmin);
     }
 
     @Override
@@ -59,11 +53,10 @@ public class AdminServiceImpl implements AdminService {
             throw new RuntimeException("Invalid credentials");
         }
         
-        List<Admin> admins = jsonStore.read(ADMINS_FILE, Admin.class);
-        
-        for (Admin admin : admins) {
-            if (admin.getUsername().equalsIgnoreCase(username.trim()) 
-                && admin.getPassword().equals(password)) {
+        Optional<Admin> adminOpt = adminRepository.findByUsernameIgnoreCase(username.trim());
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            if (admin.getPassword().equals(password)) {
                 return admin;
             }
         }
@@ -73,23 +66,19 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void validateBuilding(Building building) {
-        // Validate building name
         if (building.getName() == null || building.getName().trim().isEmpty()) {
             throw new RuntimeException("Building name cannot be empty");
         }
         
-        // Validate address
         if (building.getAddress() == null || building.getAddress().trim().isEmpty()) {
             throw new RuntimeException("Building address cannot be empty");
         }
         
-        // Validate floors
         if (building.getFloors() == null || building.getFloors().isEmpty()) {
             throw new RuntimeException("Building must have at least one floor");
         }
         
-        // Validate each floor has slots
-        for (Building.Floor floor : building.getFloors()) {
+        for (Floor floor : building.getFloors()) {
             if (floor.getLevel() == null || floor.getLevel().trim().isEmpty()) {
                 throw new RuntimeException("Floor level cannot be empty");
             }
@@ -101,98 +90,71 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void addBuilding(Building building, String adminId) {
-        // Validate building first
         validateBuilding(building);
         
-        // Check for duplicate building name
-        List<Building> buildings = jsonStore.read(BUILDINGS_FILE, Building.class);
-        for (Building b : buildings) {
-            if (b.getName().equalsIgnoreCase(building.getName().trim())) {
-                throw new RuntimeException("A building with name '" + building.getName() + "' already exists. Please choose a different name.");
-            }
+        Optional<Building> existing = buildingRepository.findByNameIgnoreCase(building.getName().trim());
+        if (existing.isPresent()) {
+            throw new RuntimeException("A building with name '" + building.getName() + "' already exists. Please choose a different name.");
         }
         
-        // Set the admin owner
         building.setAdminId(adminId);
         building.setName(building.getName().trim());
         
-        buildings.add(building);
-        jsonStore.write(BUILDINGS_FILE, buildings);
+        // Ensure bidirectional relationships are set
+        if (building.getFloors() != null) {
+            for (Floor f : building.getFloors()) {
+                f.setBuilding(building);
+                if (f.getSlots() != null) {
+                    for (FloorSlot s : f.getSlots()) {
+                        s.setFloor(f);
+                    }
+                }
+            }
+        }
+        
+        buildingRepository.save(building);
     }
 
     @Override
     public List<Building> getBuildings() {
-        return jsonStore.read(BUILDINGS_FILE, Building.class);
+        return buildingRepository.findAll();
     }
 
     @Override
     public List<Building> getBuildingsByAdmin(String adminId) {
-        List<Building> allBuildings = jsonStore.read(BUILDINGS_FILE, Building.class);
-        List<Building> adminBuildings = new ArrayList<>();
-        
-        for (Building b : allBuildings) {
-            if (adminId.equals(b.getAdminId())) {
-                adminBuildings.add(b);
-            }
-        }
-        
-        return adminBuildings;
+        return buildingRepository.findByAdminId(adminId);
     }
     
     @Override
     public List<Building> searchBuildings(String query) {
-        List<Building> allBuildings = jsonStore.read(BUILDINGS_FILE, Building.class);
-        
         if (query == null || query.trim().isEmpty()) {
-            return allBuildings;
+            return buildingRepository.findAll();
         }
-        
-        String searchTerm = query.trim().toLowerCase();
-        List<Building> results = new ArrayList<>();
-        
-        for (Building b : allBuildings) {
-            // Search by name or address
-            if ((b.getName() != null && b.getName().toLowerCase().contains(searchTerm)) ||
-                (b.getAddress() != null && b.getAddress().toLowerCase().contains(searchTerm))) {
-                results.add(b);
-            }
-        }
-        
-        return results;
+        String searchTerm = query.trim();
+        return buildingRepository.findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(searchTerm, searchTerm);
     }
     
     @Override
     public boolean hasActiveReservations(String buildingName) {
-        List<Reservation> reservations = jsonStore.read(RESERVATIONS_FILE, Reservation.class);
-        
-        for (Reservation r : reservations) {
-            if (r.getBuildingName().equalsIgnoreCase(buildingName) && "ACTIVE".equals(r.getStatus())) {
-                return true;
-            }
-        }
-        
-        return false;
+        List<Reservation> activeReservations = reservationRepository.findByBuildingNameIgnoreCaseAndStatus(buildingName, "ACTIVE");
+        return !activeReservations.isEmpty();
     }
 
     @Override
     public boolean deleteBuilding(String buildingName, String adminId) {
-        // Check for active reservations first
         if (hasActiveReservations(buildingName)) {
             throw new RuntimeException("Cannot delete building '" + buildingName + "' - there are active reservations. Please wait for all vehicles to checkout first.");
         }
         
-        List<Building> buildings = jsonStore.read(BUILDINGS_FILE, Building.class);
-        
-        // Find and remove building only if admin owns it
-        boolean removed = buildings.removeIf(b -> 
-            b.getName().equalsIgnoreCase(buildingName) && adminId.equals(b.getAdminId())
-        );
-        
-        if (!removed) {
-            throw new RuntimeException("Building not found or you don't have permission to delete it");
+        Optional<Building> buildingOpt = buildingRepository.findByNameIgnoreCase(buildingName);
+        if (buildingOpt.isPresent()) {
+            Building b = buildingOpt.get();
+            if (adminId.equals(b.getAdminId())) {
+                buildingRepository.delete(b);
+                return true;
+            }
         }
         
-        jsonStore.write(BUILDINGS_FILE, buildings);
-        return true;
+        throw new RuntimeException("Building not found or you don't have permission to delete it");
     }
 }
