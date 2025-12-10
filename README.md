@@ -2,7 +2,7 @@
 
 ParkEasy is a web-based application designed to simplify and automate the process of discovering, booking, and managing parking spaces. The system provides a seamless interface for users to find parking spots in real-time while offering administrators powerful tools to manage slots, monitor usage, and maintain records efficiently.
 
-## ✨ Features
+## Features
 
 ### User Features
 - **User Registration & Login** – Secure authentication using role-based access.
@@ -21,7 +21,7 @@ ParkEasy is a web-based application designed to simplify and automate the proces
 - REST-based architecture (if applicable).
 - Scalable folder structure for easy project extension.
 
-## 👥 Contributors & Assigned Contributions
+## Contributors & Assigned Contributions
 
 | Contributor | Roll No. | Contributions |
 |------------|----------|---------------|
@@ -32,7 +32,7 @@ ParkEasy is a web-based application designed to simplify and automate the proces
 | **Raj Gandhi** | BT2024172 | Testing, debugging, performance optimization, error handling |
 | **Subhadeep Das** | BT2024219 | Documentation, deployment setup, configuration management |
 
-## 🚀 How to Run the Project
+##  How to Run the Project
 
 1. **Download the ZIP file**
 2. **Extract the ZIP**
@@ -42,6 +42,6 @@ ParkEasy is a web-based application designed to simplify and automate the proces
 5. **Open `ParkingController.java` and click Run ▶** to start the backend
 6. **Go to `index.html` and double-click it** to open the frontend in your browser
 
-## 📌 Notes
+##  Notes
 - Ensure your database service is running (if applicable).
 - Use a modern browser for best performance.
