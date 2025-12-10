@@ -39,7 +39,7 @@ ParkEasy is a web-based application designed to simplify and automate the proces
 3. **Open the extracted project folder in IntelliJ IDEA**
 4. **Click the button to download/install dependencies**  
    (IntelliJ will show a popup or a refresh icon for Maven/Gradle)
-5. **Open `ParkingController.java` and click Run  to start the backend
+5. **Open `ParkingController.java`** and click Run  to start the backend
 6. **Go to `index.html` and double-click it** to open the frontend in your browser
 
 ##  Notes
