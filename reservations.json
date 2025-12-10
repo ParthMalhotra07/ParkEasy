@@ -1,0 +1,11 @@
+[ {
+  "reservationId" : "ad13b179-50fc-43ad-9640-20b8a9c2d835",
+  "vehicleNumber" : "HR03S6696",
+  "buildingName" : "hardh's pp",
+  "floorLevel" : "b1",
+  "slotId" : "b1-11",
+  "startTime" : "2025-12-09T23:06:20.2652762",
+  "endTime" : "2025-12-09T23:06:53.7064599",
+  "status" : "PAID",
+  "billAmount" : 40.0
+} ]
